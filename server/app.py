@@ -1,12 +1,13 @@
-from flask import Flask, request
+from socket import *
+serverPort = 5000
+serverSocket = socket(AF_INET, SOCK_STREAM)
+serverSocket.bind(("", serverPort))
+serverSocket.listen(1)
+print('The server is ready to receive')
 
-app = Flask(__name__)
-app.config["SECRET_KEY"] = "secret!"
-
-@app.route("/")
-def hello():
-    return "Hello!"
-
-@app.route("/query", methods=["GET"])
-def inference():
-    return request.args
+while True:
+    connectionSocket, addr = serverSocket.accept() 
+    sentence = connectionSocket.recv(1024).decode()
+    capitalizedSentence = sentence.upper()
+    connectionSocket.send(capitalizedSentence.encode())
+    connectionSocket.close()
