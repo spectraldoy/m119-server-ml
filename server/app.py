@@ -1,13 +1,24 @@
-from socket import *
-serverPort = 5000
-serverSocket = socket(AF_INET, SOCK_STREAM)
-serverSocket.bind(("", serverPort))
-serverSocket.listen(1)
-print('The server is ready to receive')
+from flask import Flask, request
+from model import get_model
+import torch
 
-while True:
-    connectionSocket, addr = serverSocket.accept() 
-    sentence = connectionSocket.recv(1024).decode()
-    capitalizedSentence = sentence.upper()
-    connectionSocket.send(capitalizedSentence.encode())
-    connectionSocket.close()
+model = get_model()
+
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    return "Hello!"
+
+@app.route("/query", methods=["GET"])
+def inference():
+    ax = float(request.args.get("ax", 0))
+    ay = float(request.args.get("ay", 0))
+    az = float(request.args.get("az", 0))
+
+    output = model(torch.tensor([ax, ay, az], device=torch.device("cpu"))).max()
+    if az > 0:
+        return "up"
+    else:
+        return "down"
+
